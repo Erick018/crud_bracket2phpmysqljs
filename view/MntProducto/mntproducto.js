@@ -1,9 +1,9 @@
 var tabla;
 
 function init() {
-    // $("#producto_form").on("submit", function (e) {
-    //     guardaryeditar(e);
-    // });
+    $("#producto_form").on("submit", function (e) {
+        guardaryeditar(e);
+    });
 }
 
 $(document).ready(function () {
@@ -28,7 +28,7 @@ $(document).ready(function () {
         "bDestroy": true,
         "responsive": true,
         "bInfo": true,
-        "iDisplayLength": 2,//Por cada 10 registros hace una paginación
+        "iDisplayLength": 10,//Por cada 10 registros hace una paginación
         "order": [[0, "asc"]],//Ordenar (columna,orden)
         "language": {
             "sProcessing": "Procesando...",
@@ -55,6 +55,91 @@ $(document).ready(function () {
             }
         }
     }).DataTable();
+});
+
+function guardaryeditar(e) {
+    e.preventDefault();
+    var formData = new FormData($("#producto_form")[0]);
+    $.ajax({
+        url: "../../controller/producto.php?op=guardaryeditar",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (datos) {
+            console.log(datos);
+            $('#producto_form')[0].reset();
+            $("#modalmantenimiento").modal('hide');
+            $('#producto_data').DataTable().ajax.reload();
+
+            swal.fire(
+                'Registro!',
+                'El registro correctamente.',
+                'success'
+            )
+        }
+    });
+}
+
+function editar(prod_id) {
+    console.log(prod_id);
+    /*$.post("../../controller/producto.php?op=mostrar",{prod_id:prod_id},function (data) {
+        data = JSON.parse(data);
+        $('#prod_id').val(data.prod_id);
+        $('#prod_nom').val(data.prod_nom);
+    });
+    $('#mdltitulo').html('Editar Registro');
+    $('#modalmantenimiento').modal('show'); */
+}
+
+function eliminar(prod_id) {
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-danger'
+        },
+        buttonsStyling: false
+    })
+
+    swalWithBootstrapButtons.fire({
+        title: 'CRUD',
+        text: "Esta seguro de Eliminar el registro?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Si, eliminar!',
+        cancelButtonText: 'No, cancelar!',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            $.post("../../controller/producto.php?op=eliminar", { prod_id: prod_id }, function (data) {
+
+            });
+
+            $('#producto_data').DataTable().ajax.reload();
+
+            swalWithBootstrapButtons.fire(
+                'Eliminado!',
+                'Su archivo de ha eliminado.',
+                'success'
+            )
+        } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+        ) {
+            swalWithBootstrapButtons.fire(
+                'Cancelado',
+                'Se a salvado el archivo :).',
+                'error'
+            )
+        }
+    })
+}
+
+$(document).on("click", "#btnnuevo", function () {
+    //$('#prod_id').val('');
+    $('#mdltitulo').html('Nuevo Registro');
+    $('#modalmantenimiento').modal('show');
 });
 
 init();
